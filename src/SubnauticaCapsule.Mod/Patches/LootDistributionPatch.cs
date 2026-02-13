@@ -41,7 +41,7 @@ internal static class LootDistributionPatch
             return;
         }
 
-        float probability = Mathf.Clamp(Plugin.Cfg.SpawnProbability.Value, 0.01f, 1.0f);
+        float probability = Mathf.Clamp(Plugin.Cfg.SpawnProbability.Value, 0.01f, 5.0f);
 
         // FIX: Register TimeCapsule in srcDistribution (required by CSVEntitySpawner.GetPrefabForSlot)
         if (!__instance.srcDistribution.ContainsKey(classId))
@@ -52,7 +52,7 @@ internal static class LootDistributionPatch
                 biomeDistribution.Add(new LootDistributionData.BiomeData
                 {
                     biome = biome,
-                    count = 1,
+                    count = 3,
                     probability = probability
                 });
             }
@@ -92,7 +92,7 @@ internal static class LootDistributionPatch
             var prefabData = new LootDistributionData.PrefabData
             {
                 classId = classId,
-                count = 1,
+                count = 3,
                 probability = probability
             };
             dstData.prefabs.Add(prefabData);

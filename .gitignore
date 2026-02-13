@@ -26,6 +26,12 @@ x86/
 tmp/
 NUL
 
+## Claude Code
+.claude/
+
+## Publish output
+publish/
+
 ## OS
 Thumbs.db
 ehthumbs.db

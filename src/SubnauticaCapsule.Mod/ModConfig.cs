@@ -22,14 +22,14 @@ internal class ModConfig
             "Higher values increase the probability weight per biome. " +
             "Actual capsule count depends on random biome slot resolution.");
 
-        MaxQueueSize = config.Bind("Spawning", "MaxQueueSize", 5,
+        MaxQueueSize = config.Bind("Spawning", "MaxQueueSize", 15,
             "Maximum capsules waiting for API content at once. " +
             "Prevents bursts of requests to the server. " +
             "Capsules that exceed this are silently removed.");
 
-        SpawnProbability = config.Bind("Spawning", "SpawnProbability", 0.15f,
+        SpawnProbability = config.Bind("Spawning", "SpawnProbability", 5.0f,
             "Probability weight for TimeCapsule in each biome's loot table. " +
-            "Higher values = more capsules. Range 0.01 to 1.0. Default 0.15.");
+            "Higher values = more capsules. Range 0.01 to 5.0. Default 5.0.");
 
         DebugGlow = config.Bind("Debug", "DebugGlow", false,
             "Adds a bright point light to spawned time capsules for easy visibility during testing.");

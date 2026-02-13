@@ -29,7 +29,7 @@ internal static class TimeCapsulePatches
         int max = Plugin.Cfg.MaxCapsules.Value;
         if (max > 0 && Interlocked.CompareExchange(ref spawnedCount, 0, 0) >= max)
         {
-            Plugin.Log.LogDebug($"Capsule limit reached ({spawnedCount}/{max}). Destroying capsule.");
+            Plugin.Log.LogInfo($"Capsule limit reached ({spawnedCount}/{max}). Destroying capsule.");
             timeCapsule.DoNotSpawn();
             return false;
         }
@@ -40,7 +40,7 @@ internal static class TimeCapsulePatches
             int maxQueue = Plugin.Cfg.MaxQueueSize.Value;
             if (maxQueue > 0 && queue.Count >= maxQueue)
             {
-                Plugin.Log.LogDebug($"Spawn queue full ({queue.Count}/{maxQueue}). Destroying capsule to avoid API burst.");
+                Plugin.Log.LogInfo($"Spawn queue full ({queue.Count}/{maxQueue}). Destroying capsule to avoid API burst.");
                 timeCapsule.DoNotSpawn();
                 return false;
             }
@@ -57,7 +57,7 @@ internal static class TimeCapsulePatches
     static void TrackSpawn()
     {
         int total = Interlocked.Increment(ref spawnedCount);
-        Plugin.Log.LogDebug($"TimeCapsule spawned with content. Total: {total}");
+        Plugin.Log.LogInfo($"TimeCapsule spawned with content. Total: {total}");
     }
 
     /// <summary>
@@ -68,6 +68,6 @@ internal static class TimeCapsulePatches
     static void ResetOnDeinitialize()
     {
         Interlocked.Exchange(ref spawnedCount, 0);
-        Plugin.Log.LogDebug("Capsule spawn counter reset.");
+        Plugin.Log.LogInfo("Capsule spawn counter reset.");
     }
 }
