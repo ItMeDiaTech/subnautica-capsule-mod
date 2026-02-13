@@ -28,7 +28,7 @@ Subnautica\BepInEx\config\com.diatech.unlimitedtimecapsules.cfg
 |--------|---------|-------------|
 | `MaxCapsules` | `0` | Total capsule limit per save. `0` = unlimited. |
 | `SpawnProbability` | `5.0` | Probability weight in each biome's loot table. Higher = more capsules. Range: 0.01–5.0. |
-| `ExtraSpawnCount` | `40` | Number of biomes that receive capsule injection. Higher = wider distribution. |
+| `EnableExtraSpawns` | `true` | Enable injecting TimeCapsule into biome loot tables for additional spawns. |
 | `MaxQueueSize` | `15` | Max capsules waiting for API content at once. Prevents request bursts. |
 | `DebugGlow` | `false` | Adds a bright point light to spawned capsules for testing visibility. |
 

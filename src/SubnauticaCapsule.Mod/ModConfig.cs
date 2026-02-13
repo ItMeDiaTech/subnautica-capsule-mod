@@ -5,7 +5,7 @@ namespace SubnauticaCapsule;
 internal class ModConfig
 {
     public ConfigEntry<int> MaxCapsules { get; }
-    public ConfigEntry<int> ExtraSpawnCount { get; }
+    public ConfigEntry<bool> EnableExtraSpawns { get; }
     public ConfigEntry<int> MaxQueueSize { get; }
     public ConfigEntry<float> SpawnProbability { get; }
     public ConfigEntry<bool> DebugGlow { get; }
@@ -17,10 +17,8 @@ internal class ModConfig
             "Maximum total time capsules per save. 0 = unlimited (default). " +
             "The queue size throttle prevents API bursts regardless of this setting.");
 
-        ExtraSpawnCount = config.Bind("Spawning", "ExtraSpawnCount", 40,
-            "Controls how many biomes receive TimeCapsule injection. " +
-            "Higher values increase the probability weight per biome. " +
-            "Actual capsule count depends on random biome slot resolution.");
+        EnableExtraSpawns = config.Bind("Spawning", "EnableExtraSpawns", true,
+            "Enable injecting TimeCapsule into biome loot tables for additional spawns.");
 
         MaxQueueSize = config.Bind("Spawning", "MaxQueueSize", 15,
             "Maximum capsules waiting for API content at once. " +

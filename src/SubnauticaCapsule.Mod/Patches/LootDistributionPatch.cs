@@ -31,8 +31,7 @@ internal static class LootDistributionPatch
     [HarmonyPostfix]
     static void Postfix(LootDistributionData __instance)
     {
-        int extraCount = Plugin.Cfg.ExtraSpawnCount.Value;
-        if (extraCount <= 0) return;
+        if (!Plugin.Cfg.EnableExtraSpawns.Value) return;
 
         string classId = CraftData.GetClassIdForTechType(TechType.TimeCapsule);
         if (string.IsNullOrEmpty(classId))
@@ -52,29 +51,26 @@ internal static class LootDistributionPatch
                 biomeDistribution.Add(new LootDistributionData.BiomeData
                 {
                     biome = biome,
-                    count = 3,
+                    count = 1,
                     probability = probability
                 });
             }
             __instance.srcDistribution[classId] = new LootDistributionData.SrcData
             {
-                prefabPath = "WorldEntities/Alterra/TimeCapsule",
+                prefabPath = "WorldEntities/Tools/TimeCapsule",
                 distribution = biomeDistribution
             };
             Plugin.Log.LogInfo($"Registered TimeCapsule in srcDistribution with {biomeDistribution.Count} biomes.");
         }
 
-        // Diagnostic: verify WorldEntityInfo exists and log slotType
-        if (UWE.WorldEntityDatabase.TryGetInfo(classId, out var entityInfo))
+        // Bail out if WorldEntityDatabase has no entry — spawner would discard these anyway
+        if (!UWE.WorldEntityDatabase.TryGetInfo(classId, out var entityInfo))
         {
-            Plugin.Log.LogInfo($"TimeCapsule WorldEntityInfo: slotType={entityInfo.slotType}, " +
-                $"techType={entityInfo.techType}, cellLevel={entityInfo.cellLevel}");
+            Plugin.Log.LogWarning("TimeCapsule classId not found in WorldEntityDatabase! Aborting injection.");
+            return;
         }
-        else
-        {
-            Plugin.Log.LogWarning("TimeCapsule classId not found in WorldEntityDatabase! " +
-                "Extra capsules will fail to spawn.");
-        }
+        Plugin.Log.LogInfo($"TimeCapsule WorldEntityInfo: slotType={entityInfo.slotType}, " +
+            $"techType={entityInfo.techType}, cellLevel={entityInfo.cellLevel}");
 
         // Inject into dstDistribution
         int injected = 0;
@@ -92,11 +88,15 @@ internal static class LootDistributionPatch
             var prefabData = new LootDistributionData.PrefabData
             {
                 classId = classId,
-                count = 3,
+                count = 1,
                 probability = probability
             };
-            dstData.prefabs.Add(prefabData);
-            injected++;
+            bool alreadyPresent = dstData.prefabs.Exists(p => p.classId == classId);
+            if (!alreadyPresent)
+            {
+                dstData.prefabs.Add(prefabData);
+                injected++;
+            }
         }
 
         Plugin.Log.LogInfo($"Injected TimeCapsule (classId={classId}) into {injected} biomes " +
