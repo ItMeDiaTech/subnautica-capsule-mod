@@ -91,8 +91,16 @@ internal sealed class ModInstaller
         var configPath = Path.Combine(gamePath, ConfigRelPath, ModConfigFileName);
         if (File.Exists(configPath))
         {
-            File.Delete(configPath);
-            progress?.Report("Removed old config file (will be regenerated on first launch).");
+            try
+            {
+                File.Delete(configPath);
+                progress?.Report("Removed old config file (will be regenerated on first launch).");
+            }
+            catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
+            {
+                progress?.Report($"Could not remove old config: {ex.Message}. " +
+                    "You may need to delete it manually to pick up new settings.");
+            }
         }
 
         progress?.Report($"Installing {ModDllName} to plugins folder...");

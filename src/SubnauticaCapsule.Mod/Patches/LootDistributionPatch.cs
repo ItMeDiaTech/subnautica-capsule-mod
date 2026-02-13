@@ -99,7 +99,10 @@ internal static class LootDistributionPatch
             }
         }
 
-        Plugin.Log.LogInfo($"Injected TimeCapsule (classId={classId}) into {injected} biomes " +
-            $"(probability: {probability:F3} each)");
+        if (injected > 0)
+            Plugin.Log.LogInfo($"Injected TimeCapsule (classId={classId}) into {injected} biomes " +
+                $"(probability: {probability:F3} each)");
+        else
+            Plugin.Log.LogInfo("TimeCapsule already present in all target biomes (no new injections needed).");
     }
 }
