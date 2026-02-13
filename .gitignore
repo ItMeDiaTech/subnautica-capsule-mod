@@ -1,0 +1,29 @@
+## .NET / C#
+bin/
+obj/
+*.user
+*.suo
+*.cache
+*.dll
+*.exe
+*.pdb
+
+## Visual Studio
+.vs/
+*.userprefs
+
+## NuGet
+packages/
+*.nupkg
+
+## Build output
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+
+## OS
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store

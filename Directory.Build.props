@@ -1,0 +1,7 @@
+<Project>
+  <PropertyGroup>
+    <SubnauticaDir>C:\Program Files (x86)\Steam\steamapps\common\Subnautica</SubnauticaDir>
+    <ManagedDir>$(SubnauticaDir)\Subnautica_Data\Managed</ManagedDir>
+    <BepInExDir>$(SubnauticaDir)\BepInEx\core</BepInExDir>
+  </PropertyGroup>
+</Project>
