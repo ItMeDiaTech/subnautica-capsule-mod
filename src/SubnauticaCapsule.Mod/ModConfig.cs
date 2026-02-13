@@ -6,13 +6,23 @@ internal class ModConfig
 {
     public ConfigEntry<int> MaxCapsules { get; }
     public ConfigEntry<int> ExtraSpawnCount { get; }
+    public ConfigEntry<int> MaxQueueSize { get; }
     public bool IsUnlimited => MaxCapsules.Value <= 0;
 
     public ModConfig(ConfigFile config)
     {
-        MaxCapsules = config.Bind("General", "MaxCapsules", 0,
-            "Maximum time capsules per save. 0 = unlimited.");
-        ExtraSpawnCount = config.Bind("General", "ExtraSpawnCount", 40,
-            "Number of additional capsule spawn points to inject into the world beyond the base 40.");
+        MaxCapsules = config.Bind("General", "MaxCapsules", 80,
+            "Maximum total time capsules per save (base 40 + extras). " +
+            "Set to 0 for unlimited. Keep reasonable to avoid excessive API calls.");
+
+        ExtraSpawnCount = config.Bind("Spawning", "ExtraSpawnCount", 40,
+            "Controls how many biomes receive TimeCapsule injection. " +
+            "Higher values increase the probability weight per biome. " +
+            "Actual capsule count depends on random biome slot resolution.");
+
+        MaxQueueSize = config.Bind("Spawning", "MaxQueueSize", 5,
+            "Maximum capsules waiting for API content at once. " +
+            "Prevents bursts of requests to the server. " +
+            "Capsules that exceed this are silently removed.");
     }
 }

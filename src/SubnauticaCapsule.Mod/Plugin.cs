@@ -16,6 +16,7 @@ public class Plugin : BaseUnityPlugin
         Cfg = new ModConfig(Config);
         new Harmony(PluginInfo.GUID).PatchAll();
         Logger.LogInfo($"{PluginInfo.Name} v{PluginInfo.Version} loaded. " +
-            $"Capsule limit: {(Cfg.IsUnlimited ? "Unlimited" : Cfg.MaxCapsules.Value.ToString())}");
+            $"Capsule limit: {(Cfg.IsUnlimited ? "Unlimited" : Cfg.MaxCapsules.Value.ToString())}, " +
+            $"Queue limit: {Cfg.MaxQueueSize.Value}");
     }
 }
