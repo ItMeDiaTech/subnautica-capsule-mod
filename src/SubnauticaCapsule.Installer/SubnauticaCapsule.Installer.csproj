@@ -6,6 +6,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <RootNamespace>SubnauticaCapsule.Installer</RootNamespace>
     <AssemblyName>SubnauticaCapsule.Installer</AssemblyName>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
