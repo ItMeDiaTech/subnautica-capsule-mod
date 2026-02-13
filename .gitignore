@@ -22,6 +22,10 @@ packages/
 x64/
 x86/
 
+## Project temp
+tmp/
+NUL
+
 ## OS
 Thumbs.db
 ehthumbs.db
