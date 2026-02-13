@@ -42,9 +42,14 @@ internal static class SteamDetector
 
         foreach (var regPath in registryPaths)
         {
-            using var key = Registry.LocalMachine.OpenSubKey(regPath);
-            if (key?.GetValue("InstallPath") is string path && Directory.Exists(path))
-                return path;
+            try
+            {
+                using var key = Registry.LocalMachine.OpenSubKey(regPath);
+                if (key?.GetValue("InstallPath") is string path && Directory.Exists(path))
+                    return path;
+            }
+            catch (System.Security.SecurityException) { }
+            catch (UnauthorizedAccessException) { }
         }
 
         return null;

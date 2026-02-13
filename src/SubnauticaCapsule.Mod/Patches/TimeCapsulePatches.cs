@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading;
 using HarmonyLib;
 
 namespace SubnauticaCapsule.Patches;
@@ -25,25 +26,24 @@ internal static class TimeCapsulePatches
     [HarmonyPrefix]
     static bool RegisterSpawnPrefix(PlayerTimeCapsule __instance, TimeCapsule timeCapsule)
     {
-        // Check total spawned cap
         int max = Plugin.Cfg.MaxCapsules.Value;
-        if (max > 0 && spawnedCount >= max)
+        if (max > 0 && Interlocked.CompareExchange(ref spawnedCount, 0, 0) >= max)
         {
             Plugin.Log.LogDebug($"Capsule limit reached ({spawnedCount}/{max}). Destroying capsule.");
             timeCapsule.DoNotSpawn();
             return false;
         }
 
-        // Check queue size to prevent API request bursts.
-        // Access the private spawnQueue field. This is safe because BepInEx.AssemblyPublicizer
-        // makes private members accessible at compile time.
         List<TimeCapsule> queue = __instance.spawnQueue;
-        int maxQueue = Plugin.Cfg.MaxQueueSize.Value;
-        if (maxQueue > 0 && queue.Count >= maxQueue)
+        if (queue != null)
         {
-            Plugin.Log.LogDebug($"Spawn queue full ({queue.Count}/{maxQueue}). Destroying capsule to avoid API burst.");
-            timeCapsule.DoNotSpawn();
-            return false;
+            int maxQueue = Plugin.Cfg.MaxQueueSize.Value;
+            if (maxQueue > 0 && queue.Count >= maxQueue)
+            {
+                Plugin.Log.LogDebug($"Spawn queue full ({queue.Count}/{maxQueue}). Destroying capsule to avoid API burst.");
+                timeCapsule.DoNotSpawn();
+                return false;
+            }
         }
 
         return true;
@@ -56,8 +56,8 @@ internal static class TimeCapsulePatches
     [HarmonyPostfix]
     static void TrackSpawn()
     {
-        spawnedCount++;
-        Plugin.Log.LogDebug($"TimeCapsule spawned with content. Total: {spawnedCount}");
+        int total = Interlocked.Increment(ref spawnedCount);
+        Plugin.Log.LogDebug($"TimeCapsule spawned with content. Total: {total}");
     }
 
     /// <summary>
@@ -67,7 +67,7 @@ internal static class TimeCapsulePatches
     [HarmonyPostfix]
     static void ResetOnDeinitialize()
     {
-        spawnedCount = 0;
+        Interlocked.Exchange(ref spawnedCount, 0);
         Plugin.Log.LogDebug("Capsule spawn counter reset.");
     }
 }

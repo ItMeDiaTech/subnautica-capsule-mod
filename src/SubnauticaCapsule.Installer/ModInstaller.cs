@@ -78,9 +78,11 @@ internal sealed class ModInstaller
 
         if (stream == null)
         {
+            var available = string.Join(", ",
+                Assembly.GetExecutingAssembly().GetManifestResourceNames());
             throw new InvalidOperationException(
-                "Mod DLL not found embedded in installer. " +
-                "Ensure the mod project is built before building the installer.");
+                $"Mod DLL '{ModDllName}' not found in installer resources. " +
+                $"Available: [{available}]. The installer may be corrupted.");
         }
 
         progress?.Report($"Installing {ModDllName} to plugins folder...");
