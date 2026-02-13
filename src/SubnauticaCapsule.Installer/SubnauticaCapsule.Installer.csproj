@@ -9,8 +9,12 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="..\..\bin\mod\SubnauticaCapsule.dll" Link="Resources\SubnauticaCapsule.dll" Condition="Exists('..\..\bin\mod\SubnauticaCapsule.dll')" />
+  <PropertyGroup>
+    <ModDllPath>..\SubnauticaCapsule.Mod\bin\$(Configuration)\net472\SubnauticaCapsule.dll</ModDllPath>
+  </PropertyGroup>
+
+  <ItemGroup Condition="Exists('$(ModDllPath)')">
+    <EmbeddedResource Include="$(ModDllPath)" LogicalName="SubnauticaCapsule.dll" />
   </ItemGroup>
 
 </Project>
