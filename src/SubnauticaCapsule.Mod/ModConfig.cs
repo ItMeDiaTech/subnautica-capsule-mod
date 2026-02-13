@@ -7,6 +7,8 @@ internal class ModConfig
     public ConfigEntry<int> MaxCapsules { get; }
     public ConfigEntry<int> ExtraSpawnCount { get; }
     public ConfigEntry<int> MaxQueueSize { get; }
+    public ConfigEntry<float> SpawnProbability { get; }
+    public ConfigEntry<bool> DebugGlow { get; }
     public bool IsUnlimited => MaxCapsules.Value <= 0;
 
     public ModConfig(ConfigFile config)
@@ -24,5 +26,12 @@ internal class ModConfig
             "Maximum capsules waiting for API content at once. " +
             "Prevents bursts of requests to the server. " +
             "Capsules that exceed this are silently removed.");
+
+        SpawnProbability = config.Bind("Spawning", "SpawnProbability", 0.15f,
+            "Probability weight for TimeCapsule in each biome's loot table. " +
+            "Higher values = more capsules. Range 0.01 to 1.0. Default 0.15.");
+
+        DebugGlow = config.Bind("Debug", "DebugGlow", false,
+            "Adds a bright point light to spawned time capsules for easy visibility during testing.");
     }
 }

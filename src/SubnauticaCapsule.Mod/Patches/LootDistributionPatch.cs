@@ -41,9 +41,42 @@ internal static class LootDistributionPatch
             return;
         }
 
-        int perBiome = Mathf.Max(extraCount / TargetBiomes.Length, 1);
-        float probability = Mathf.Clamp(perBiome * 0.01f, 0.005f, 0.05f);
+        float probability = Mathf.Clamp(Plugin.Cfg.SpawnProbability.Value, 0.01f, 1.0f);
 
+        // FIX: Register TimeCapsule in srcDistribution (required by CSVEntitySpawner.GetPrefabForSlot)
+        if (!__instance.srcDistribution.ContainsKey(classId))
+        {
+            var biomeDistribution = new List<LootDistributionData.BiomeData>();
+            foreach (var biome in TargetBiomes)
+            {
+                biomeDistribution.Add(new LootDistributionData.BiomeData
+                {
+                    biome = biome,
+                    count = 1,
+                    probability = probability
+                });
+            }
+            __instance.srcDistribution[classId] = new LootDistributionData.SrcData
+            {
+                prefabPath = "WorldEntities/Alterra/TimeCapsule",
+                distribution = biomeDistribution
+            };
+            Plugin.Log.LogInfo($"Registered TimeCapsule in srcDistribution with {biomeDistribution.Count} biomes.");
+        }
+
+        // Diagnostic: verify WorldEntityInfo exists and log slotType
+        if (UWE.WorldEntityDatabase.TryGetInfo(classId, out var entityInfo))
+        {
+            Plugin.Log.LogInfo($"TimeCapsule WorldEntityInfo: slotType={entityInfo.slotType}, " +
+                $"techType={entityInfo.techType}, cellLevel={entityInfo.cellLevel}");
+        }
+        else
+        {
+            Plugin.Log.LogWarning("TimeCapsule classId not found in WorldEntityDatabase! " +
+                "Extra capsules will fail to spawn.");
+        }
+
+        // Inject into dstDistribution
         int injected = 0;
         foreach (var biome in TargetBiomes)
         {
