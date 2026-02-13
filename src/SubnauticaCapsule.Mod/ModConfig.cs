@@ -11,9 +11,9 @@ internal class ModConfig
 
     public ModConfig(ConfigFile config)
     {
-        MaxCapsules = config.Bind("General", "MaxCapsules", 80,
-            "Maximum total time capsules per save (base 40 + extras). " +
-            "Set to 0 for unlimited. Keep reasonable to avoid excessive API calls.");
+        MaxCapsules = config.Bind("General", "MaxCapsules", 0,
+            "Maximum total time capsules per save. 0 = unlimited (default). " +
+            "The queue size throttle prevents API bursts regardless of this setting.");
 
         ExtraSpawnCount = config.Bind("Spawning", "ExtraSpawnCount", 40,
             "Controls how many biomes receive TimeCapsule injection. " +
