@@ -15,6 +15,8 @@ internal sealed class ModInstaller
 
     private const string ModDllName = "SubnauticaCapsule.dll";
     private const string PluginsRelPath = @"BepInEx\plugins";
+    private const string ConfigRelPath = @"BepInEx\config";
+    private const string ModConfigFileName = "com.diatech.unlimitedtimecapsules.cfg";
     private const string CoreRelPath = @"BepInEx\core";
 
     public static bool IsValidGamePath(string gamePath)
@@ -83,6 +85,14 @@ internal sealed class ModInstaller
             throw new InvalidOperationException(
                 $"Mod DLL '{ModDllName}' not found in installer resources. " +
                 $"Available: [{available}]. The installer may be corrupted.");
+        }
+
+        // Clear old config so BepInEx regenerates it with current settings
+        var configPath = Path.Combine(gamePath, ConfigRelPath, ModConfigFileName);
+        if (File.Exists(configPath))
+        {
+            File.Delete(configPath);
+            progress?.Report("Removed old config file (will be regenerated on first launch).");
         }
 
         progress?.Report($"Installing {ModDllName} to plugins folder...");
