@@ -8,6 +8,7 @@ namespace SubnauticaCapsule.Installer;
 public partial class MainForm : Form
 {
     private string? gamePath;
+    private CancellationTokenSource? downloadCts;
 
     public MainForm()
     {
@@ -97,16 +98,27 @@ public partial class MainForm : Form
         SetButtonsEnabled(false);
         var progress = new Progress<string>(Log);
 
+        downloadCts = new CancellationTokenSource();
+        btnCancel.Visible = true;
+
         try
         {
             if (!ModInstaller.IsBepInExInstalled(gamePath))
             {
                 Log("BepInEx is required. Installing...");
-                await ModInstaller.DownloadAndInstallBepInExAsync(gamePath, progress, CancellationToken.None);
+                await ModInstaller.DownloadAndInstallBepInExAsync(gamePath, progress, downloadCts.Token);
             }
 
             ModInstaller.InstallMod(gamePath, progress);
             Log("Installation complete.");
+        }
+        catch (OperationCanceledException) when (downloadCts?.IsCancellationRequested == true)
+        {
+            Log("Installation cancelled.");
+        }
+        catch (OperationCanceledException)
+        {
+            Log("Error: Download timed out. Check your internet connection.");
         }
         catch (Exception ex)
         {
@@ -119,9 +131,21 @@ public partial class MainForm : Form
         }
         finally
         {
-            UpdateStatus();
-            SetButtonsEnabled(true);
+            if (!IsDisposed)
+            {
+                btnCancel.Visible = false;
+                btnBrowse.Enabled = true;
+                UpdateStatus();
+            }
+            downloadCts?.Dispose();
+            downloadCts = null;
         }
+    }
+
+    private void BtnCancel_Click(object? sender, EventArgs e)
+    {
+        downloadCts?.Cancel();
+        Log("Cancelling...");
     }
 
     private void BtnUninstall_Click(object? sender, EventArgs e)
@@ -137,6 +161,7 @@ public partial class MainForm : Form
 
         if (result != DialogResult.Yes) return;
 
+        SetButtonsEnabled(false);
         try
         {
             ModInstaller.UninstallMod(gamePath, new Progress<string>(Log));
@@ -144,9 +169,15 @@ public partial class MainForm : Form
         catch (Exception ex)
         {
             Log($"Error: {ex.Message}");
+            MessageBox.Show(
+                $"Uninstall failed:\n{ex.Message}",
+                "Error",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
         }
         finally
         {
+            btnBrowse.Enabled = true;
             UpdateStatus();
         }
     }
@@ -154,6 +185,113 @@ public partial class MainForm : Form
     private void BtnClose_Click(object? sender, EventArgs e)
     {
         Close();
+    }
+
+    private async void LnkCheckUpdate_LinkClicked(object? sender, LinkLabelLinkClickedEventArgs e)
+    {
+        lnkCheckUpdate.Enabled = false;
+        Log("Checking for updates...");
+
+        try
+        {
+            var release = await UpdateChecker.GetLatestReleaseAsync();
+
+            if (release == null)
+            {
+                Log("Could not check for updates. GitHub may be unreachable.");
+                MessageBox.Show(
+                    "Unable to check for updates.\n\n" +
+                    "Please check your internet connection or try again later.",
+                    "Update Check Failed",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                return;
+            }
+
+            if (!UpdateChecker.IsNewerThan(release.Version, InstallerVersion.Current))
+            {
+                Log($"You are running the latest version (v{InstallerVersion.Current}).");
+                MessageBox.Show(
+                    $"You are running the latest version (v{InstallerVersion.Current}).",
+                    "No Updates Available",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+                return;
+            }
+
+            if (release.AssetUrl == null)
+            {
+                Log($"Update {release.TagName} found but installer asset is missing.");
+                MessageBox.Show(
+                    $"Version {release.TagName} is available, but the installer download " +
+                    "is not yet published.\n\nPlease try again later or download manually from GitHub.",
+                    "Update Incomplete",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                return;
+            }
+
+            // Prompt user
+            var sizeMB = (release.AssetSize / (1024.0 * 1024.0)).ToString("F1");
+            var result = MessageBox.Show(
+                $"A new version is available: {release.TagName}\n" +
+                $"Current version: v{InstallerVersion.Current}\n\n" +
+                $"Download size: ~{sizeMB} MB\n\n" +
+                "Download and install the update now?\n" +
+                "The installer will restart automatically.",
+                "Update Available",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            if (result != DialogResult.Yes)
+            {
+                Log("Update declined.");
+                return;
+            }
+
+            // Disable UI during download
+            SetButtonsEnabled(false);
+            downloadCts = new CancellationTokenSource();
+            btnCancel.Visible = true;
+
+            var progress = new Progress<string>(Log);
+            await UpdateChecker.ApplySelfUpdateAsync(release.AssetUrl, progress, downloadCts.Token);
+
+            Log("Update downloaded. Restarting...");
+            Application.Exit();
+        }
+        catch (OperationCanceledException)
+        {
+            Log("Update cancelled.");
+        }
+        catch (Exception ex)
+        {
+            Log($"Update error: {ex.Message}");
+            MessageBox.Show(
+                $"Update failed:\n{ex.Message}\n\n" +
+                "You can download the latest version manually from:\n" +
+                "https://github.com/ItMeDiaTech/subnautica-capsule-mod/releases/latest",
+                "Update Error",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
+        }
+        finally
+        {
+            if (!IsDisposed)
+            {
+                btnCancel.Visible = false;
+                lnkCheckUpdate.Enabled = true;
+                UpdateStatus();
+            }
+            downloadCts?.Dispose();
+            downloadCts = null;
+        }
+    }
+
+    protected override void OnFormClosing(FormClosingEventArgs e)
+    {
+        downloadCts?.Cancel();
+        base.OnFormClosing(e);
     }
 
     private void SetButtonsEnabled(bool enabled)
