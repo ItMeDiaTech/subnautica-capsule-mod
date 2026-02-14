@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Text.Json;
@@ -12,6 +13,7 @@ internal static class UpdateChecker
     private const string Owner = "ItMeDiaTech";
     private const string Repo = "subnautica-capsule-mod";
     private const string AssetName = "SubnauticaCapsule.Installer.exe";
+    private const long MaxDownloadBytes = 200 * 1024 * 1024; // 200 MB safety limit
 
     private static readonly HttpClient Http = CreateHttpClient();
 
@@ -71,5 +73,89 @@ internal static class UpdateChecker
     public static bool IsNewerThan(Version remote, string currentVersion)
     {
         return Version.TryParse(currentVersion, out var local) && remote > local;
+    }
+
+    public static async Task ApplySelfUpdateAsync(
+        string downloadUrl,
+        IProgress<string>? progress = null,
+        CancellationToken ct = default)
+    {
+        var currentExe = Environment.ProcessPath
+            ?? throw new InvalidOperationException("Cannot determine current executable path.");
+        var tempExe = currentExe + ".update";
+
+        try
+        {
+            // Download new exe next to current one
+            progress?.Report("Downloading update...");
+            using var response = await Http.GetAsync(downloadUrl,
+                HttpCompletionOption.ResponseHeadersRead, ct);
+            response.EnsureSuccessStatusCode();
+
+            long? contentLength = response.Content.Headers.ContentLength;
+            if (contentLength > MaxDownloadBytes)
+                throw new InvalidOperationException(
+                    $"Download too large ({contentLength} bytes). Aborting.");
+
+            using (var remoteStream = await response.Content.ReadAsStreamAsync(ct))
+            using (var fs = File.Create(tempExe))
+            {
+                var buffer = new byte[81920];
+                long totalRead = 0;
+                int bytesRead;
+                while ((bytesRead = await remoteStream.ReadAsync(buffer, ct)) > 0)
+                {
+                    totalRead += bytesRead;
+                    if (totalRead > MaxDownloadBytes)
+                        throw new InvalidOperationException("Download exceeded size limit.");
+                    await fs.WriteAsync(buffer.AsMemory(0, bytesRead), ct);
+
+                    if (contentLength > 0)
+                    {
+                        int pct = (int)(totalRead * 100 / contentLength.Value);
+                        progress?.Report($"Downloading update... {pct}%");
+                    }
+                }
+            }
+
+            // Write batch script to swap exe after this process exits
+            progress?.Report("Applying update...");
+            var batchPath = currentExe + ".update.cmd";
+            int pid = Environment.ProcessId;
+
+            var script = $"""
+                @echo off
+                :wait
+                tasklist /FI "PID eq {pid}" 2>NUL | find /I "{pid}" >NUL
+                if not errorlevel 1 (
+                    timeout /t 1 /nobreak >NUL
+                    goto wait
+                )
+                if exist "{currentExe}.old" del /f "{currentExe}.old"
+                move /y "{currentExe}" "{currentExe}.old"
+                move /y "{tempExe}" "{currentExe}"
+                start "" "{currentExe}"
+                del /f "{currentExe}.old" 2>NUL
+                del /f "%~f0"
+                """;
+
+            File.WriteAllText(batchPath, script);
+
+            // Launch batch script hidden and let caller exit the app
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = "cmd.exe",
+                Arguments = $"/c \"{batchPath}\"",
+                CreateNoWindow = true,
+                WindowStyle = ProcessWindowStyle.Hidden,
+                UseShellExecute = false
+            });
+        }
+        catch
+        {
+            // Clean up partial download on any failure
+            try { if (File.Exists(tempExe)) File.Delete(tempExe); } catch { }
+            throw;
+        }
     }
 }
