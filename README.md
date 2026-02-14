@@ -11,11 +11,15 @@ By default, Subnautica spawns a small, fixed number of time capsules per save. T
 
 ## Installation
 
-1. Download `SubnauticaCapsule.Installer.exe` from the [latest release](https://github.com/DiaTech-co/subnautica-capsule-mod/releases/latest)
+1. Download `SubnauticaCapsule.Installer.exe` from the [latest release](https://github.com/ItMeDiaTech/subnautica-capsule-mod/releases/latest)
 2. Run the installer — it auto-detects your Steam installation
 3. Click **Install** (installs BepInEx if needed, then copies the mod DLL)
 
 To uninstall, run the installer again and click **Uninstall**.
+
+## Updating
+
+The installer includes a built-in update checker. Click **Check for updates** in the bottom-left corner of the installer window to check for new versions. If an update is available, the installer will download it and restart automatically.
 
 ## Configuration
 
@@ -27,7 +31,7 @@ Subnautica\BepInEx\config\com.diatech.unlimitedtimecapsules.cfg
 | Option | Default | Description |
 |--------|---------|-------------|
 | `MaxCapsules` | `0` | Total capsule limit per save. `0` = unlimited. |
-| `SpawnProbability` | `5.0` | Probability weight in each biome's loot table. Higher = more capsules. Range: 0.01–5.0. |
+| `SpawnProbability` | `2.0` | Probability weight in each biome's loot table. Higher = more capsules. Range: 0.01–10.0. |
 | `EnableExtraSpawns` | `true` | Enable injecting TimeCapsule into biome loot tables for additional spawns. |
 | `MaxQueueSize` | `15` | Max capsules waiting for API content at once. Prevents request bursts. |
 | `DebugGlow` | `false` | Adds a bright point light to spawned capsules for testing visibility. |
