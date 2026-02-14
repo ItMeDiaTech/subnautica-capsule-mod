@@ -24,6 +24,7 @@ partial class MainForm
         this.lblStatusMod = new System.Windows.Forms.Label();
         this.btnInstall = new System.Windows.Forms.Button();
         this.btnUninstall = new System.Windows.Forms.Button();
+        this.btnCancel = new System.Windows.Forms.Button();
         this.btnClose = new System.Windows.Forms.Button();
         this.txtLog = new System.Windows.Forms.TextBox();
         this.grpStatus.SuspendLayout();
@@ -82,6 +83,13 @@ partial class MainForm
         this.btnUninstall.Enabled = false;
         this.btnUninstall.Click += new System.EventHandler(this.BtnUninstall_Click);
 
+        // btnCancel
+        this.btnCancel.Location = new System.Drawing.Point(274, 150);
+        this.btnCancel.Size = new System.Drawing.Size(90, 32);
+        this.btnCancel.Text = "Cancel";
+        this.btnCancel.Visible = false;
+        this.btnCancel.Click += new System.EventHandler(this.BtnCancel_Click);
+
         // btnClose
         this.btnClose.Location = new System.Drawing.Point(422, 150);
         this.btnClose.Size = new System.Drawing.Size(120, 32);
@@ -96,18 +104,35 @@ partial class MainForm
         this.txtLog.Size = new System.Drawing.Size(528, 130);
         this.txtLog.BackColor = System.Drawing.SystemColors.Window;
 
+        // lnkCheckUpdate
+        this.lnkCheckUpdate = new System.Windows.Forms.LinkLabel();
+        this.lnkCheckUpdate.AutoSize = true;
+        this.lnkCheckUpdate.Location = new System.Drawing.Point(14, 335);
+        this.lnkCheckUpdate.Text = "Check for updates";
+        this.lnkCheckUpdate.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.LnkCheckUpdate_LinkClicked);
+
+        // lblVersion
+        this.lblVersion = new System.Windows.Forms.Label();
+        this.lblVersion.AutoSize = true;
+        this.lblVersion.ForeColor = System.Drawing.SystemColors.GrayText;
+        this.lblVersion.Text = "v" + InstallerVersion.Current;
+        this.lblVersion.Location = new System.Drawing.Point(494, 338);
+
         // MainForm
         this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
         this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-        this.ClientSize = new System.Drawing.Size(556, 338);
+        this.ClientSize = new System.Drawing.Size(556, 365);
         this.Controls.Add(this.lblPath);
         this.Controls.Add(this.txtPath);
         this.Controls.Add(this.btnBrowse);
         this.Controls.Add(this.grpStatus);
         this.Controls.Add(this.btnInstall);
         this.Controls.Add(this.btnUninstall);
+        this.Controls.Add(this.btnCancel);
         this.Controls.Add(this.btnClose);
         this.Controls.Add(this.txtLog);
+        this.Controls.Add(this.lnkCheckUpdate);
+        this.Controls.Add(this.lblVersion);
         this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
         this.MaximizeBox = false;
         this.Name = "MainForm";
@@ -128,6 +153,9 @@ partial class MainForm
     private System.Windows.Forms.Label lblStatusMod = null!;
     private System.Windows.Forms.Button btnInstall = null!;
     private System.Windows.Forms.Button btnUninstall = null!;
+    private System.Windows.Forms.Button btnCancel = null!;
     private System.Windows.Forms.Button btnClose = null!;
     private System.Windows.Forms.TextBox txtLog = null!;
+    private System.Windows.Forms.LinkLabel lnkCheckUpdate = null!;
+    private System.Windows.Forms.Label lblVersion = null!;
 }
